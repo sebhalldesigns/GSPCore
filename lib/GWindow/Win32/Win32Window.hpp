@@ -25,6 +25,7 @@ class Win32Window: public GWindowBase
         static void Destroy(Win32Window* window);
 
         void SetDelegate(GWindowDelegate* delegate) final;
+        void SetRootView(GView* view) final;
         void SetTitle(std::string title) final;
         void SetSize(GSize size) final;
         void SetBackgroundColor(GColor color) final;
@@ -33,6 +34,7 @@ class Win32Window: public GWindowBase
         void SetMinimumSize(GSize size) final;
 
         GWindowDelegate* GetDelegate() final;
+        GView* GetRootView() final;
         std::string GetTitle() final;
         GSize GetSize() final;
         GColor GetBackgroundColor() final;

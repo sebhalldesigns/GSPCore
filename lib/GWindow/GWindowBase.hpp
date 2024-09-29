@@ -7,6 +7,7 @@
 
 #include <GWindowDelegate/GWindowDelegate.hpp>
 
+#include <GView/GView.hpp>
 
 #include <string>
 
@@ -24,6 +25,7 @@ class GWindowBase
         GWindowVisibility Visibility;
 
         GWindowDelegate* Delegate;
+        GView* RootView;
 
         GWindowBase() = default;
         ~GWindowBase() = default;
@@ -31,6 +33,7 @@ class GWindowBase
     public:
 
         virtual void SetDelegate(GWindowDelegate* delegate) = 0; 
+        virtual void SetRootView(GView* view) = 0;
         virtual void SetTitle(std::string title) = 0;
         virtual void SetSize(GSize size) = 0;
         virtual void SetBackgroundColor(GColor color) = 0;
@@ -39,6 +42,7 @@ class GWindowBase
         virtual void SetMinimumSize(GSize size) = 0;
         
         virtual GWindowDelegate* GetDelegate() = 0;
+        virtual GView* GetRootView() = 0;
         virtual std::string GetTitle() = 0;
         virtual GSize GetSize() = 0;
         virtual GColor GetBackgroundColor() = 0;

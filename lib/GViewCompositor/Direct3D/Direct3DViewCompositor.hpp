@@ -29,7 +29,7 @@ class Direct3DViewCompositor: public GViewCompositorBase
         ID3D11PixelShader* pixelShader;
 
         void Resize(GSize size) final;
-        void Render() final;
+        void Render(GView* view) final;
 
         static Direct3DViewCompositor* Create(HWND window);
         static void Destroy(Direct3DViewCompositor* compositor);

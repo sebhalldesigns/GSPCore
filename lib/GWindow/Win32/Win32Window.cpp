@@ -120,7 +120,10 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
     {
         case WM_SHOWWINDOW:
         {
-            window->compositor->Render();
+            if (window->RootView != nullptr)
+            {
+                window->compositor->Render(window->RootView);
+            }
             return 0;
         }
         case WM_SIZE: 
@@ -132,13 +135,23 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 
             window->compositor->Resize(GSize((float)LOWORD(lParam), (float)HIWORD(lParam)));
 
+            if (window->RootView != nullptr)
+            {
+                window->RootView->WindowFrame = GRect(0, 0, (float)LOWORD(lParam), (float)HIWORD(lParam));
+                window->RootView->LayoutSubviews();
+            }
+
             PostMessage(hwnd, WM_PAINT, 0, 0);
             return 0;
         }
             
         case WM_PAINT: 
         {
-            window->compositor->Render();
+            if (window->RootView != nullptr)
+            {
+                window->compositor->Render(window->RootView);
+            }
+
             ValidateRect(hwnd, NULL);
             return 0;
         }
@@ -158,6 +171,11 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 
 void Win32Window::SetDelegate(GWindowDelegate* delegate) {
     this->Delegate = delegate;
+}
+
+void Win32Window::SetRootView(GView* view) 
+{
+    this->RootView = view;
 }
 
 void Win32Window::SetTitle(std::string title) 
@@ -211,6 +229,11 @@ void Win32Window::SetMinimumSize(GSize size)
 GWindowDelegate* Win32Window::GetDelegate() 
 {
     return this->Delegate;
+}
+
+GView* Win32Window::GetRootView() 
+{
+    return this->RootView;
 }
 
 std::string Win32Window::GetTitle() 

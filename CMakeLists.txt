@@ -4,6 +4,7 @@
 add_library(GSPCore STATIC
     lib/GApplication/GApplication.cpp
     lib/GLog/GLog.cpp
+    lib/GView/GView.cpp
     lib/GWindow/Win32/Win32Window.cpp
     lib/GViewCompositor/Direct3D/Direct3DViewCompositor.cpp
 )

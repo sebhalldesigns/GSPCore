@@ -151,10 +151,34 @@ void Direct3DViewCompositor::Resize(GSize size)
     deviceContext->RSSetViewports(1, &viewport);
 }
 
-void Direct3DViewCompositor::Render()
+void Direct3DViewCompositor::Render(GView* view)
 {
     float clearColor[] = {0.0f, 0.2f, 0.4f, 1.0f};
     deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
+
+
+    // iterate over each view and its subviews using a while loop (no recursion), adding them to an std::vector in the correct order
+    // then iterate over the std::vector and draw each view
+
+    std::vector<GView*> views;
+    views.push_back(view);
+
+    while (!views.empty())
+    {
+        GView* currentView = views.back();
+        views.pop_back();
+
+        for (GView* subview : currentView->Subviews)
+        {
+            views.push_back(subview);
+        }
+
+        // draw the view
+        deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        deviceContext->Draw(3, 0);
+    }
+
+
     deviceContext->Draw(3, 0);
     swapChain->Present(1, 0);
 }
