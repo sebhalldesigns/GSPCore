@@ -39,10 +39,11 @@ Win32Window* Win32Window::Create(std::string title, GSize size)
 
     if (!hasSetup) 
     {
-         runtime_window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+        runtime_window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
         runtime_window_class.lpfnWndProc = Win32Window::WindowProc;
         runtime_window_class.hInstance = GetModuleHandle(0);
         runtime_window_class.lpszClassName = RUNTIME_WINDOW_CLASS;
+        runtime_window_class.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
         if (RegisterClassW(&runtime_window_class))
         {
@@ -73,14 +74,26 @@ Win32Window* Win32Window::Create(std::string title, GSize size)
     }
 
 
-    ShowWindow(window->hwnd, SW_SHOW);
-    UpdateWindow(window->hwnd);
+    
 
+    window->compositor = Direct3DViewCompositor::Create(window->hwnd);
+
+    if (!window->compositor)
+    {
+        delete window;
+        GLog::Error("Failed to create compositor");
+        exit(EXIT_FAILURE);
+    }
+
+    // update properties and add to map
     window->Title = title;
     window->Size = size;
     window->Visibility = GWindowVisibility::Visible;
 
     window_map[window->hwnd] = window;
+
+    ShowWindow(window->hwnd, SW_SHOW);
+    UpdateWindow(window->hwnd);
 
     return window;
 }
@@ -105,14 +118,19 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 
     switch (uMsg) 
     {
+        case WM_SHOWWINDOW:
+        {
+            window->compositor->Render();
+            return 0;
+        }
         case WM_SIZE: 
         {
-            // Handle window resize
-           // glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
             if (window->Delegate != nullptr)
             {
                 window->Delegate->WindowDidResize(GSize((float)LOWORD(lParam), (float)HIWORD(lParam)));
             }
+
+            window->compositor->Resize(GSize((float)LOWORD(lParam), (float)HIWORD(lParam)));
 
             PostMessage(hwnd, WM_PAINT, 0, 0);
             return 0;
@@ -120,11 +138,7 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
             
         case WM_PAINT: 
         {
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            // render here
-
-            //SwapBuffers(GetDC(hwnd));
+            window->compositor->Render();
             ValidateRect(hwnd, NULL);
             return 0;
         }

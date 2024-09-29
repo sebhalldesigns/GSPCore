@@ -2,6 +2,7 @@
 #define WIN32WINDOW_HPP
 
 #include <GWindow/GWindowBase.hpp>
+#include <GViewCompositor/Direct3D/Direct3DViewCompositor.hpp>
 
 #include <Windows.h>
 
@@ -11,7 +12,7 @@ class Win32Window: public GWindowBase
 {
     private:
         HWND hwnd;
-        //HGLRC glContext;
+        Direct3DViewCompositor* compositor;
 
         Win32Window() = default;
         ~Win32Window() = default;
