@@ -302,22 +302,5 @@ int main() {
     UpdateWindow(hwnd);
 
 
-    bool should_quit = false;
-    MSG msg = { };
-    while (!should_quit) {
-        // Generally you'll want to empty out the message queue before each rendering
-        // frame or messages will build up in the queue possibly causing input
-        // delay. Multiple messages and input events occur before each frame.
-        while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-
-            if (msg.message == WM_QUIT || (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE))
-                should_quit = true;
-        }
-
-    }
-
-
     return 0;
 }
