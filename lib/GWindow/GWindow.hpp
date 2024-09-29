@@ -2,23 +2,9 @@
 #define GWINDOW_HPP
 
 #ifdef _WIN32
-    #include <GWindow/Win32/Win32GWindow.hpp>
-    #define GNativeWindow Win32GWindow
+    #include <GWindow/Win32/Win32Window.hpp>
+    #define GWindow Win32Window
 #endif
-
-class GWindow
-{
-    private:
-
-        GNativeWindow window;
-
-    public:
-
-        GWindow(const char* title, float width, float height);
-        static void Poll();
-        
-    friend class GSPCore;
-};
 
 
 #endif // GWINDOW_HPP

@@ -12,9 +12,13 @@ int GApplication::Run()
     GLog::Info("GSPCore Framework 0.1");
     GLog::Info("Starting: %s %d.%d.%d", Title.c_str(), MajorVersion, MinorVersion, SubVersion);
 
+    if (Delegate == nullptr)
+    {
+        GLog::Error("GApplication Delegate not set");
+        return EXIT_FAILURE;
+    }
 
-
-    DidLaunch();
+    Delegate->ApplicationDidLaunch();
 
     #ifdef _WIN32
         bool shouldQuit = false;
@@ -25,10 +29,10 @@ int GApplication::Run()
             while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
             {
 
-                if (msg.message == WM_QUIT || msg.message == WM_CLOSE) 
+                if (msg.message == WM_QUIT || msg.message == WM_CLOSE || (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)) 
                 {
                     printf("CALLING SHOULD TERMINATE\n");
-                    if (ShouldTerminate()) 
+                    if (Delegate->ApplicationShouldTerminate()) 
                     {
                         shouldQuit = true;
                     }
@@ -42,8 +46,7 @@ int GApplication::Run()
             }
         }
         
-
-        WillTerminate();
+        Delegate->ApplicationWillTerminate();
         
     #endif
 

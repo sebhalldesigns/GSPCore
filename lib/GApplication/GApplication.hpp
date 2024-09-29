@@ -1,11 +1,13 @@
 #ifndef GAPPLICATION_HPP
 #define GAPPLICATION_HPP
 
+#include <GApplicationDelegate/GApplicationDelegate.hpp>
+
 #include <string>
 
 class GApplication
 {
-    protected:
+    public:
 
         std::string Title;
         std::string Description;
@@ -13,12 +15,9 @@ class GApplication
         int MajorVersion;
         int MinorVersion;
         int SubVersion;
-        
-        virtual void DidLaunch() {};
-        virtual bool ShouldTerminate() { return true; };
-        virtual void WillTerminate() {};
-    
-    public:
+
+        GApplicationDelegate* Delegate;
+
         int Run();
 };
 

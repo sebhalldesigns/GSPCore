@@ -4,8 +4,7 @@
 add_library(GSPCore STATIC
     lib/GApplication/GApplication.cpp
     lib/GLog/GLog.cpp
-    lib/GWindow/GWindow.cpp
-    lib/GWindow/Win32/Win32GWindow.cpp
+    lib/GWindow/Win32/Win32Window.cpp
 )
 
 find_package(OpenGL REQUIRED)
