@@ -2,7 +2,8 @@
 
 # Add the executable
 add_library(GSPCore STATIC
-    lib/GSPCore.cpp
+    lib/GApplication/GApplication.cpp
+    lib/GLog/GLog.cpp
     lib/GWindow/GWindow.cpp
     lib/GWindow/Win32/Win32GWindow.cpp
 )

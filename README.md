@@ -1,2 +1,3 @@
 # GSPCore
-OpenGSP Core Library
+OpenGSP Core - a cross-platform application framework 
+
