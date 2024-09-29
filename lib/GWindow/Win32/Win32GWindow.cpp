@@ -44,6 +44,7 @@ wglChoosePixelFormatARB_type *wglChoosePixelFormatARB;
 
 // LOCAL FUNCTIONS
 
+bool Init();
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // function to convert utf8 std::string to std::wstring
@@ -57,10 +58,11 @@ const static LPCWSTR RUNTIME_WINDOW_CLASS = L"GSPCoreWindowClass";
 WNDCLASSW init_window_class = { };
 WNDCLASSW runtime_window_class = { };
 
+static bool hasSetup = false;
 
-bool GWindow::Init()
+
+bool Init()
 {
-
     init_window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     init_window_class.lpfnWndProc = DefWindowProcW;
     init_window_class.hInstance = GetModuleHandle(0);
@@ -142,10 +144,13 @@ bool GWindow::Init()
     ReleaseDC(dummy_window, dummy_dc);
     DestroyWindow(dummy_window);
 
+    printf("SETTING UP DONE\n");
+
     return true;
 }
 
-void GWindow::Poll() {
+
+void Win32GWindow::Poll() {
     // Generally you'll want to empty out the message queue before each rendering
     // frame or messages will build up in the queue possibly causing input
     // delay. Multiple messages and input events occur before each frame.
@@ -161,9 +166,20 @@ void GWindow::Poll() {
     }
 }
 
-GWindow::GWindow(const char* title, float width, float height) 
+Win32GWindow::Win32GWindow(const char* title, float width, float height) 
 {   
-    HWND hwnd = CreateWindowW(
+
+    if (!hasSetup) 
+    {
+        if (!Init()) 
+        {
+            return;
+        }
+
+        hasSetup = true;
+    }
+
+    this->hwnd = CreateWindowW(
         RUNTIME_WINDOW_CLASS,
         utf8_to_wstring(title).c_str(),
         WS_OVERLAPPEDWINDOW,
@@ -216,16 +232,18 @@ GWindow::GWindow(const char* title, float width, float height)
         0,
     };
 
-    HGLRC gl33_context = wglCreateContextAttribsARB(hdc, 0, gl33_attribs);
-    if (!gl33_context) {
+    this->glContext = wglCreateContextAttribsARB(hdc, 0, gl33_attribs);
+    if (!this->glContext) {
         printf("Failed to create OpenGL 3.3 context.\n");
         exit(EXIT_FAILURE);
     }
 
-    if (!wglMakeCurrent(hdc, gl33_context)) {
+    if (!wglMakeCurrent(hdc, this->glContext)) {
         printf("Failed to activate OpenGL 3.3 rendering context.\n");
         exit(EXIT_FAILURE);
     }
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
@@ -233,34 +251,42 @@ GWindow::GWindow(const char* title, float width, float height)
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 {
-    switch (uMsg) {
-        case WM_SIZE:
+    switch (uMsg) 
+    {
+        case WM_SIZE: 
+        {
             // Handle window resize
             glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
             PostMessage(hwnd, WM_PAINT, 0, 0);
             return 0;
-        case WM_PAINT:
-
-            printf("PAINT\n");
-            // Render the scene
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
+        }
+            
+        case WM_PAINT: 
+        {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            // Add your rendering code here
+
+            // render here
+
             SwapBuffers(GetDC(hwnd));
             ValidateRect(hwnd, NULL);
             return 0;
-        case WM_CLOSE:
-            PostQuitMessage(0);
-            return 0;
-        default:
-            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
-    }
+        }
 
-   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+        case WM_CLOSE: 
+        {
+            PostQuitMessage(0);
+            return 0;    
+        }
+            
+        default:
+        {
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+        }
+    }
 }
 
-std::wstring utf8_to_wstring(const std::string& str) {
+std::wstring utf8_to_wstring(const std::string& str) 
+{
     int count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), NULL, 0);
     std::wstring wstr(count, 0);
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), &wstr[0], count);

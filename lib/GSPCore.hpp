@@ -7,7 +7,6 @@ class GSPCore
 {
     public:
     
-        static bool Init();
         static void Poll();
 };
 
