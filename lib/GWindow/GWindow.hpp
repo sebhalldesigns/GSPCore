@@ -4,6 +4,9 @@
 #ifdef _WIN32
     #include <GWindow/Win32/Win32Window.hpp>
     #define GWindow Win32Window
+#elif EMSCRIPTEN
+    #include <GWindow/Wasm/WasmWindow.hpp>
+    #define GWindow WasmWindow
 #endif
 
 

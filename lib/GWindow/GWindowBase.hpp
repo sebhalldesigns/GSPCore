@@ -51,6 +51,7 @@ class GWindowBase
         virtual GSize GetMinimumSize() = 0;
 
     friend class Win32Window;
+    friend class WasmWindow;
 };
 
 
