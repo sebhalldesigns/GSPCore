@@ -25,6 +25,7 @@ elseif(EMSCRIPTEN)
 
     set(GSPCORE_PLATFORM_SOURCE 
         lib/GWindow/Wasm/WasmWindow.cpp
+        lib/GViewCompositor/WebGL/WebGLViewCompositor.cpp
     )
 elseif (UNIX)
     message(STATUS "Configuring for Linux")

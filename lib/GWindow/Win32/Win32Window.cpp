@@ -128,12 +128,16 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
         }
         case WM_SIZE: 
         {
+            GSize newSize = GSize((float)LOWORD(lParam), (float)HIWORD(lParam));
+
+            window->Size = newSize;
+
             if (window->Delegate != nullptr)
             {
-                window->Delegate->WindowDidResize(GSize((float)LOWORD(lParam), (float)HIWORD(lParam)));
+                window->Delegate->WindowDidResize(newSize);
             }
-
-            window->compositor->Resize(GSize((float)LOWORD(lParam), (float)HIWORD(lParam)));
+            
+            window->compositor->Resize(newSize);
 
             if (window->RootView != nullptr)
             {

@@ -1,19 +1,22 @@
 #ifndef WASMWINDOW_HPP
 #define WASMWINDOW_HPP
 
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#include <GLES3/gl3.h>
+
 
 #include <GWindow/GWindowBase.hpp>
+
+#include <GViewCompositor/WebGL/WebGLViewCompositor.hpp>
 
 class WasmWindow: public GWindowBase
 {
     private:
-        EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = NULL;
+
+        WebGLViewCompositor* compositor;
 
         WasmWindow() = default;
         ~WasmWindow() = default;
+
+        static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent *uiEvent, void *userData);
     public:
         
         static WasmWindow* Create(std::string title, GSize size);

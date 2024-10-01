@@ -1,49 +1,72 @@
 #include <GWindow/Wasm/WasmWindow.hpp>
 
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#include <GLES3/gl3.h>
+#include <GLog/GLog.hpp>
 
-void render() {
-    glClearColor(0.0f, 0.2f, 0.4f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    printf("render\n");
-    emscripten_webgl_commit_frame();
-}
+static WasmWindow* GLOBAL_WINDOW = nullptr;
 
 WasmWindow* WasmWindow::Create(std::string title, GSize size)
 {
 
-    WasmWindow* window = new WasmWindow();
-
-
-    EmscriptenWebGLContextAttributes attr;
-    emscripten_webgl_init_context_attributes(&attr);
-    attr.alpha = EM_TRUE;
-    attr.depth = EM_TRUE;
-    attr.stencil = EM_FALSE;
-    attr.antialias = EM_TRUE;
-    attr.majorVersion = 2;
-    attr.minorVersion = 0;
-
-    window->context = emscripten_webgl_create_context("#canvas", &attr);
-    if (window->context <= 0) {
-        delete window;
-        printf("Failed to create WebGL context!\n");
-        return NULL;
+    if (GLOBAL_WINDOW != nullptr)
+    {
+        GLog::Error("Window already created");
+        exit(EXIT_FAILURE);
     }
 
-    emscripten_webgl_make_context_current(window->context);
+    WasmWindow* window = new WasmWindow();
 
-    emscripten_set_main_loop(render, 0, 1);
-     emscripten_webgl_commit_frame();
+    window->compositor = WebGLViewCompositor::Create();
 
-     return window;
+    if (!window->compositor)
+    {
+        delete window;
+        GLog::Error("Failed to start compositor");
+        exit(EXIT_FAILURE);
+    }
+
+    window->compositor->Render(nullptr);
+
+    GLOBAL_WINDOW = window;
+
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, EmscriptenResizeCallback);
+
+
+    return window;
 }
 
 void WasmWindow::Destroy(WasmWindow* window)
 {
 
+}
+
+
+EM_BOOL WasmWindow::EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
+{
+
+    if (GLOBAL_WINDOW == nullptr)
+    {
+        return EM_FALSE;
+    }
+
+    GSize newSize = GSize(uiEvent->windowInnerWidth, uiEvent->windowInnerHeight);
+
+    GLOBAL_WINDOW->Size = newSize;
+
+    if (GLOBAL_WINDOW->Delegate != nullptr)
+    {
+        GLOBAL_WINDOW->Delegate->WindowDidResize(newSize);
+    }
+
+    GLOBAL_WINDOW->compositor->Resize(newSize);
+
+    if (GLOBAL_WINDOW->RootView != nullptr)
+    {
+        GLOBAL_WINDOW->RootView->WindowFrame = GRect(0, 0, uiEvent->windowInnerWidth, uiEvent->windowInnerHeight);
+        GLOBAL_WINDOW->RootView->LayoutSubviews();
+        GLOBAL_WINDOW->compositor->Render(GLOBAL_WINDOW->RootView);
+    }
+
+    return EM_TRUE;
 }
 
 void WasmWindow::SetDelegate(GWindowDelegate* delegate)

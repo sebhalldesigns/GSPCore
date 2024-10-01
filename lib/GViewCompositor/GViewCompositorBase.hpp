@@ -12,6 +12,7 @@ class GViewCompositorBase
         virtual void Render(GView* view) = 0;
 
     friend class Direct3DViewCompositor;
+    friend class WebGLViewCompositor;
 };
 
 #endif //GVIEWCOMPOSITORBASE_HPP

@@ -78,7 +78,9 @@ class GView
         void RemoveSubview(GView* view);
         
     friend class Direct3DViewCompositor;
+    friend class WebGLViewCompositor;
     friend class Win32Window;
+    friend class WasmWindow;
 };
 
 #endif // GVIEW_HPP
