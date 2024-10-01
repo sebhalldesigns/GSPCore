@@ -15,12 +15,19 @@ class WebGLViewCompositor: public GViewCompositorBase
     private:
 
         EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = NULL;
+        GLuint shaderProgram;
+        GLuint vao, vbo;
+
+        
 
         void Resize(GSize size) final;
         void Render(GView* view) final;
 
         static WebGLViewCompositor* Create();
         static void Destroy(WebGLViewCompositor* compositor);
+
+        GLuint CompileShader(GLenum type, const std::string& source);
+        GLuint CreateShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
 
     friend class WasmWindow;
     
