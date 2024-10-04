@@ -6,17 +6,40 @@
 #include <string>
 #include <cstdint>
 
-struct Vertex {
-    float position[2];
-    float texCoord[2];
-    float color[4];
-    int32_t textureIndex;
+const uint32_t QUAD_INDICES[96] = {
+     0,  1,  2,
+     0,  2,  3,
+     4,  5,  6,
+     4,  6,  7,
+     8,  9, 10,
+     8, 10, 11,
+    12, 13, 14,
+    12, 14, 15,
+    16, 17, 18,
+    16, 18, 19,
+    20, 21, 22,
+    20, 22, 23,
+    24, 25, 26,
+    24, 26, 27,
+    28, 29, 30,
+    28, 30, 31,
+    32, 33, 34,
+    32, 34, 35,
+    36, 37, 38,
+    36, 38, 39,
+    40, 41, 42,
+    40, 42, 43,
+    44, 45, 46,
+    44, 46, 47,
+    48, 49, 50,
+    48, 50, 51,
+    52, 53, 54,
+    52, 54, 55,
+    56, 57, 58,
+    56, 58, 59,
+    60, 61, 62,
+    60, 62, 63
 };
-
-struct ViewData {
-    Vertex vertices[4];
-};
-
 
 const std::string vertexShaderSource = 
 R"(#version 300 es
@@ -24,16 +47,16 @@ R"(#version 300 es
     layout(location = 0) in vec2 aPosition;
     layout(location = 1) in vec2 aTexCoord;
     layout(location = 2) in vec4 aColor;
-    layout(location = 2) in int aTextureId;
+    layout(location = 3) in int aTextureId;
 
-    uniform vec2 viewportSize;
+    uniform vec2 uViewportSize;
 
     out vec2 vTexCoord;
     out vec4 vColor;
     flat out int vTextureId;
 
     void main() {
-        vec2 unit_position = aPosition/viewportSize;
+        vec2 unit_position = aPosition/uViewportSize;
         vec2 normalized_position = (unit_position*2.0)-1.0;
         normalized_position.y *= -1.0;
         gl_Position = vec4(normalized_position, 0.0, 1.0);
@@ -43,6 +66,8 @@ R"(#version 300 es
         vTextureId = aTextureId;
     }
 )";
+
+
 
 const std::string fragmentShaderSource = 
 R"(#version 300 es
@@ -90,39 +115,11 @@ R"(#version 300 es
         } else {
             FragColor = vColor;  // Use background color if no texture is active
         }
+
+        FragColor = vColor;  // Use background color if no texture is active
     }
 )";
 
-/*
-void RenderBatch(const std::vector<GView*>& views) {
-    std::vector<ViewData> viewData;
-    for (GView* view : views) {
-        ViewData data;
-        data.texture = view->GetTexture();
-        view->GetBackgroundColor(data.backgroundColor);
-        view->GetVertices(data.vertices);
-        viewData.push_back(data);
-    }
-
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, viewData.size() * sizeof(ViewData), viewData.data(), GL_DYNAMIC_DRAW);
-
-    glUseProgram(shaderProgram);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-
-    for (size_t i = 0; i < viewData.size(); ++i) {
-        glUniform4fv(glGetUniformLocation(shaderProgram, "uBackgroundColor"), 1, viewData[i].backgroundColor);
-        glBindTexture(GL_TEXTURE_2D, viewData[i].texture);
-        glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
-    }
-
-    glBindVertexArray(0);
-}*/
 
 WebGLViewCompositor* WebGLViewCompositor::Create()
 {
@@ -146,8 +143,38 @@ WebGLViewCompositor* WebGLViewCompositor::Create()
 
     compositor->shaderProgram = compositor->CreateShaderProgram(vertexShaderSource, fragmentShaderSource);
 
+    glUseProgram(compositor->shaderProgram);
+
+    compositor->uViewportSize = glGetUniformLocation(compositor->shaderProgram, "uViewportSize");
+    compositor->uCurrentBatchSize = glGetUniformLocation(compositor->shaderProgram, "uCurrentBatchSize");
+
     glGenVertexArrays(1, &compositor->vao);
     glGenBuffers(1, &compositor->vbo);
+    glGenBuffers(1, &compositor->ebo);
+
+    glBindVertexArray(compositor->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, compositor->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * VIEW_BATCH_VERTEX_COUNT, nullptr, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, compositor->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(QUAD_INDICES), QUAD_INDICES, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(4*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(Vertex), (void*)(8*sizeof(float)));
+    glEnableVertexAttribArray(3);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
     return compositor;
 }
@@ -158,16 +185,79 @@ void WebGLViewCompositor::Destroy(WebGLViewCompositor* compositor)
 }
 
 void WebGLViewCompositor::Resize(GSize size)
-{
-    glViewport(0, 0, size.Width, size.Height);
+{   
+    emscripten_set_canvas_element_size("#canvas", static_cast<int>(size.Width), static_cast<int>(size.Height));
+    glViewport(0, 0, static_cast<int>(size.Width), static_cast<int>(size.Height));
+    glUseProgram(shaderProgram);
+    glUniform2f(uViewportSize, size.Width, size.Height);
 }
 
 void WebGLViewCompositor::Render(GView* view)
-{
+{   
+    
     glClearColor(0.0f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    printf("render\n");
+    
+    std::vector<GView*> viewStack;
+    std::vector<GView*> stack;
+    stack.push_back(view);
+
+    while (!stack.empty()) {
+        GView* currentView = stack.back();
+        stack.pop_back();
+        viewStack.push_back(currentView);
+
+        const std::vector<GView*>& subviews = currentView->Subviews;
+        for (auto it = subviews.rbegin(); it != subviews.rend(); ++it) {
+            stack.push_back(*it);
+        }
+    }
+    size_t packedViewIndex = 0;
+
+    for (size_t viewIndex = 0; viewIndex < viewStack.size(); ++viewIndex) {
+        GView* currentView = viewStack[viewIndex];
+        int32_t textureIndex = VIEW_BATCH_SIZE;
+
+        GLuint texture = currentView->Texture;
+
+        if (texture != 0) {
+            glActiveTexture(GL_TEXTURE0 + packedViewIndex);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            textureIndex = packedViewIndex;
+        }
+
+        GRect rect = viewStack[viewIndex]->WindowFrame;
+        GColor color = viewStack[viewIndex]->BackgroundColor;
+
+        vertices[packedViewIndex * 4] = { {rect.X, rect.Y}, {0.0f, 0.0f}, {color.Red, color.Green, color.Blue, color.Alpha}, textureIndex };
+        vertices[(packedViewIndex * 4) + 1] = { {rect.X + rect.Width, rect.Y}, {1.0f, 0.0f}, {color.Red, color.Green, color.Blue, color.Alpha}, textureIndex };
+        vertices[(packedViewIndex * 4) + 2] = { {rect.X + rect.Width, rect.Y + rect.Height}, {1.0f, 1.0f}, {color.Red, color.Green, color.Blue, color.Alpha}, textureIndex };
+        vertices[(packedViewIndex * 4) + 3] = { {rect.X, rect.Y + rect.Height}, {0.0f, 1.0f}, {color.Red, color.Green, color.Blue, color.Alpha}, textureIndex };
+
+        if (packedViewIndex >= (VIEW_BATCH_SIZE - 1) || (viewIndex == (viewStack.size() - 1))) {
+
+            glUseProgram(shaderProgram);
+            glBindVertexArray(vao);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * VIEW_BATCH_VERTEX_COUNT, vertices);
+
+            glUniform1i(uCurrentBatchSize, packedViewIndex + 1);
+            glDrawElements(GL_TRIANGLES, (packedViewIndex + 1) * 6, GL_UNSIGNED_INT, nullptr);
+
+            glBindVertexArray(0);
+
+            
+            //printf("rendered %zu views\n", packedViewIndex + 1);
+            
+            packedViewIndex = 0;
+
+        } else {
+            packedViewIndex++;
+        }
+    }
+
     emscripten_webgl_commit_frame();
+
 }
 
 

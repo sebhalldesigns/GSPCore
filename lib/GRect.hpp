@@ -3,13 +3,13 @@
 
 struct GRect
 {
-    int X;
-    int Y;
-    int Width;
-    int Height;
+    float X;
+    float Y;
+    float Width;
+    float Height;
 
     GRect() = default;
-    GRect(int x, int y, int width, int height) : X(x), Y(y), Width(width), Height(height) {}
+    GRect(float x, float y, float width, float height) : X(x), Y(y), Width(width), Height(height) {}
 };
 
 #endif // GRECT_HPP

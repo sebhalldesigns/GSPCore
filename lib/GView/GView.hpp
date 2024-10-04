@@ -31,6 +31,14 @@ enum class GViewVerticalAlignment
     Bottom
 };
 
+enum class GDockPosition
+{
+    Top,
+    Bottom,
+    Left,
+    Right
+};
+
 class GView
 {
 
@@ -46,7 +54,11 @@ class GView
         GViewHorizontalAlignment HorizontalAlignment;
         GViewVerticalAlignment VerticalAlignment;
 
+        GDockPosition DockPosition;
+
         std::vector<GView*> Subviews;
+
+        uintptr_t Texture = 0;
         
         GView* Parent = nullptr;
 
@@ -57,14 +69,15 @@ class GView
 
     public:
         
-        GView* Create();
-        void Destroy(GView* view);
+        static GView* Create();
+        static void Destroy(GView* view);
 
         void SetBackgroundColor(GColor color);
         void SetSizeRequest(GSize size);
         void SetContentLayout(GViewContentLayout layout);
         void SetHorizontalAlignment(GViewHorizontalAlignment alignment);
         void SetVerticalAlignment(GViewVerticalAlignment alignment);
+        void SetDockPosition(GDockPosition position);
 
         GRect GetWindowFrame();
 
@@ -73,6 +86,7 @@ class GView
         GViewContentLayout GetContentLayout();
         GViewHorizontalAlignment GetHorizontalAlignment();
         GViewVerticalAlignment GetVerticalAlignment();
+        GDockPosition GetDockPosition();
 
         void AddSubview(GView* view);
         void RemoveSubview(GView* view);

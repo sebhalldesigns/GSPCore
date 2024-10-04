@@ -27,6 +27,8 @@ elseif(EMSCRIPTEN)
         lib/GWindow/Wasm/WasmWindow.cpp
         lib/GViewCompositor/WebGL/WebGLViewCompositor.cpp
     )
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  -s \"FETCH=1\" -s \"ALLOW_MEMORY_GROWTH=1\"-s \"USE_WEBGL2=1\" -s \"MIN_WEBGL_VERSION=2\"")
 elseif (UNIX)
     message(STATUS "Configuring for Linux")
 
@@ -46,3 +48,5 @@ add_library(GSPCore STATIC
 target_include_directories(GSPCore PRIVATE lib)
 
 target_link_libraries(GSPCore ${GSPCORE_PLATFORM_LIBRARIES})
+
+

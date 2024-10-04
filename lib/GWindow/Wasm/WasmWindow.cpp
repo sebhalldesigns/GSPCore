@@ -24,6 +24,12 @@ WasmWindow* WasmWindow::Create(std::string title, GSize size)
         exit(EXIT_FAILURE);
     }
 
+    double width, height;
+    emscripten_get_element_css_size("#canvas", &width, &height);
+
+    window->Size = GSize((float)width, (float)height);
+
+    window->compositor->Resize(GSize((float)width, (float)height));
     window->compositor->Render(nullptr);
 
     GLOBAL_WINDOW = window;
@@ -77,6 +83,9 @@ void WasmWindow::SetDelegate(GWindowDelegate* delegate)
 void WasmWindow::SetRootView(GView* view)
 {
     this->RootView = view;
+    view->WindowFrame = GRect(0, 0, Size.Width, Size.Height);
+    view->LayoutSubviews();
+    this->compositor->Render(view);
 }
 
 void WasmWindow::SetTitle(std::string title)
