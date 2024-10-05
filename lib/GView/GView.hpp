@@ -93,6 +93,7 @@ class GView
         
     friend class Direct3DViewCompositor;
     friend class WebGLViewCompositor;
+    friend class OpenGLViewCompositor;
     friend class Win32Window;
     friend class WasmWindow;
 };

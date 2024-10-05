@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdint>
 
-const uint32_t QUAD_INDICES[96] = {
+const uint32_t WebGLViewCompositor::QUAD_INDICES[96] = {
      0,  1,  2,
      0,  2,  3,
      4,  5,  6,
@@ -41,7 +41,7 @@ const uint32_t QUAD_INDICES[96] = {
     60, 62, 63
 };
 
-const std::string vertexShaderSource = 
+const std::string WebGLViewCompositor::vertexShaderSource = 
 R"(#version 300 es
 
     layout(location = 0) in vec2 aPosition;
@@ -69,7 +69,7 @@ R"(#version 300 es
 
 
 
-const std::string fragmentShaderSource = 
+const std::string WebGLViewCompositor::fragmentShaderSource = 
 R"(#version 300 es
 
     precision mediump float;
@@ -262,13 +262,15 @@ void WebGLViewCompositor::Render(GView* view)
 
 
 GLuint WebGLViewCompositor::CompileShader(GLenum type, const std::string& source) {
+
     GLuint shader = glCreateShader(type);
-    const char* src = source.c_str();
-    glShaderSource(shader, 1, &src, nullptr);
+    const char* shaderSource = source.c_str();
+    glShaderSource(shader, 1, &shaderSource, nullptr);
     glCompileShader(shader);
 
     GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+
     if (status != GL_TRUE) {
         char buffer[512];
         glGetShaderInfoLog(shader, 512, nullptr, buffer);
@@ -276,20 +278,24 @@ GLuint WebGLViewCompositor::CompileShader(GLenum type, const std::string& source
         glDeleteShader(shader);
         return 0;
     }
+
     return shader;
 }
 
 GLuint WebGLViewCompositor::CreateShaderProgram(const std::string& vertexSource, const std::string& fragmentSource) {
+
     GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexSource);
     GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentSource);
 
     GLuint program = glCreateProgram();
+
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
 
     GLint status;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
+    
     if (status != GL_TRUE) {
         char buffer[512];
         glGetProgramInfoLog(program, 512, nullptr, buffer);

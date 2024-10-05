@@ -3,6 +3,8 @@
 
 
 #include <GViewCompositor/GViewCompositorBase.hpp>
+
+#include <string>
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #include <GLES3/gl3.h>
@@ -12,17 +14,15 @@
 const size_t VIEW_BATCH_SIZE = 8;
 const size_t VIEW_BATCH_VERTEX_COUNT = VIEW_BATCH_SIZE * 4;
 
-struct Vertex {
-    float position[2];
-    float texCoord[2];
-    float color[4];
-    int32_t textureIndex;
-};
-
 
 class WebGLViewCompositor: public GViewCompositorBase
 {
     private:
+
+        const static uint32_t QUAD_INDICES[96];
+        const static std::string vertexShaderSource;
+        const static std::string fragmentShaderSource;
+
 
         EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = NULL;
         GLuint shaderProgram;

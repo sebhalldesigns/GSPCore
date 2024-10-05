@@ -76,7 +76,7 @@ Win32Window* Win32Window::Create(std::string title, GSize size)
 
     
 
-    window->compositor = Direct3DViewCompositor::Create(window->hwnd);
+    window->compositor = OpenGLViewCompositor::Create((uintptr_t)window->hwnd);
 
     if (!window->compositor)
     {
@@ -122,8 +122,12 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
         {
             if (window->RootView != nullptr)
             {
+                window->RootView->LayoutSubviews();
                 window->compositor->Render(window->RootView);
             }
+
+            SwapBuffers(GetDC(hwnd));
+            
             return 0;
         }
         case WM_SIZE: 
@@ -156,6 +160,8 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
                 window->compositor->Render(window->RootView);
             }
 
+            SwapBuffers(GetDC(hwnd));
+
             ValidateRect(hwnd, NULL);
             return 0;
         }
@@ -180,6 +186,10 @@ void Win32Window::SetDelegate(GWindowDelegate* delegate) {
 void Win32Window::SetRootView(GView* view) 
 {
     this->RootView = view;
+    view->WindowFrame = GRect(0, 0, Size.Width, Size.Height);
+    view->LayoutSubviews();
+    compositor->Render(view);
+    SwapBuffers(GetDC(hwnd));
 }
 
 void Win32Window::SetTitle(std::string title) 

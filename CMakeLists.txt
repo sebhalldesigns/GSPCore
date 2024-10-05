@@ -9,12 +9,13 @@ if (WIN32)
 
     set(GSPCORE_PLATFORM_SOURCE 
         lib/GWindow/Win32/Win32Window.cpp
-        lib/GViewCompositor/Direct3D/Direct3DViewCompositor.cpp
+        lib/GViewCompositor/OpenGL/OpenGLViewCompositor.cpp
+        lib/GViewCompositor/OpenGL/glad.c
+        lib/GViewCompositor/OpenGL/glad_wgl.c
     )
 
     set(GSPCORE_PLATFORM_LIBRARIES
-        d3d11
-        D3DCompiler
+        opengl32
     )
 
 elseif (APPLE)

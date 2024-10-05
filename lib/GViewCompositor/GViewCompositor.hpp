@@ -2,8 +2,8 @@
 #define GVIEWCOMPOSITOR_HPP
 
 #ifdef _WIN32
-    #include <GViewCompositor/Direct3D/Direct3DViewCompositor.hpp>
-    #define GViewCompositor Direct3DViewCompositor
+    #include <GViewCompositor/OpenGL/OpenGLViewCompositor.hpp>
+    #define GViewCompositor OpenGLViewCompositor
 #elif EMSCRIPTEN
     #include <GViewCompositor/WebGL/WebGLViewCompositor.hpp>
     #define GViewCompositor WebGLViewCompositor
