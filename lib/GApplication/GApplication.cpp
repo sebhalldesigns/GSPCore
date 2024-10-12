@@ -4,6 +4,9 @@
 
 #ifdef _WIN32
     #include <Windows.h>
+#elif __linux__
+    #include <X11/Xlib.h>
+    #include <GWindow/X11/X11Window.hpp>
 #endif
 
 int GApplication::Run()
@@ -47,7 +50,9 @@ int GApplication::Run()
         }
         
         Delegate->ApplicationWillTerminate();
-        
+    #elif __linux__
+
+        return X11Window::RunXLoop();
     #endif
 
     return EXIT_SUCCESS;

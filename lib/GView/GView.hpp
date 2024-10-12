@@ -6,6 +6,8 @@
 #include <GRect.hpp>
 
 #include <vector>
+#include <cstdint>
+#include <cstddef>
 
 enum class GViewContentLayout
 {
@@ -95,6 +97,7 @@ class GView
     friend class WebGLViewCompositor;
     friend class OpenGLViewCompositor;
     friend class Win32Window;
+    friend class X11Window;
     friend class WasmWindow;
 };
 

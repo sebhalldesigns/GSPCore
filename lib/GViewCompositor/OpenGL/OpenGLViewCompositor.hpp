@@ -9,7 +9,7 @@
     #include <windows.h>
     #include "glad.h"
     #include "glad_wgl.h"
-#elif UNIX
+#elif __linux__
     #include <GL/gl.h>
 #endif
 

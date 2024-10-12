@@ -1,5 +1,6 @@
 #include <GView/GView.hpp>
 
+#include <GLog/GLog.hpp>
 
 GView* GView::Create()
 {
@@ -184,5 +185,6 @@ void GView::AddSubview(GView* view)
 
 void GView::RemoveSubview(GView* view)
 {
-    Subviews.erase(std::remove(Subviews.begin(), Subviews.end(), view), Subviews.end());
+    GLog::Error("RemoveSubview not implemented");
+    //Subviews.erase(std::remove(Subviews.begin(), Subviews.end(), view), Subviews.end());
 }

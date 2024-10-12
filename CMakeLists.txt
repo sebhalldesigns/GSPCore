@@ -33,6 +33,16 @@ elseif(EMSCRIPTEN)
 elseif (UNIX)
     message(STATUS "Configuring for Linux")
 
+    set(GSPCORE_PLATFORM_SOURCE 
+        lib/GWindow/X11/X11Window.cpp
+        #lib/GViewCompositor/OpenGL/OpenGLViewCompositor.cpp
+        #lib/GViewCompositor/OpenGL/glad.c
+        #lib/GViewCompositor/OpenGL/glad_wgl.c
+    )
+
+    set(GSPCORE_PLATFORM_LIBRARIES
+        X11
+    )
 
 else()
     message(FATAL_ERROR "Unknown or unsupported platform!")
